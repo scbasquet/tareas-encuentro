@@ -190,8 +190,25 @@ async function accion(fn) {
 
 function render() {
   if (!cargado) { $app.innerHTML = `<p class="empty">Cargando…</p>`; return; }
+  // Guarda lo que la persona está escribiendo para que no se borre al redibujar
+  const escrito = {};
+  $app.querySelectorAll("input[name], textarea[name]").forEach(el => {
+    if (el.value) escrito[(el.form ? el.form.id + "|" + (el.form.dataset.id || "") : "") + "|" + el.name] = el.value;
+  });
+  const foco = document.activeElement;
+  const nombreFoco = foco && $app.contains(foco) && foco.name ? foco.name : null;
+
   if (openId && sectores.some(s => s.id === openId)) renderSector();
   else { openId = null; renderList(); }
+
+  $app.querySelectorAll("input[name], textarea[name]").forEach(el => {
+    const clave = (el.form ? el.form.id + "|" + (el.form.dataset.id || "") : "") + "|" + el.name;
+    if (escrito[clave] !== undefined) el.value = escrito[clave];
+  });
+  if (nombreFoco) {
+    const el = $app.querySelector(`[name="${nombreFoco}"]`);
+    if (el) el.focus();
+  }
 }
 
 function renderList() {
@@ -372,7 +389,9 @@ $app.addEventListener("click", e => {
 
 // Refresco periódico para ver lo que cargan los demás (sin pisar lo que se está escribiendo)
 setInterval(() => {
-  if (!ocupado && !tachandoId && !observandoId) leer().catch(() => {});
+  const escribiendo = Array.from($app.querySelectorAll("input[name], textarea[name]"))
+    .some(el => el.value.trim() !== "");
+  if (!ocupado && !tachandoId && !observandoId && !escribiendo) leer().catch(() => {});
 }, REFRESCO_MS);
 
 if (API.startsWith("PEGAR")) {
