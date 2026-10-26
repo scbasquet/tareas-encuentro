@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pendientes Encuentro Mini Básquet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Lista compartida: fondo negro, acentos rojos, tipografía de cartel de cancha */
+:root {
+  color-scheme: dark;
+  --bg: #0b0b0b;
+  --panel: #161616;
+  --line: #2a2a2a;
+  --fg: #f4f1ea;
+  --muted: #9a9790;
+  --red: #d7261e;
+  --display: "Oswald", "Arial Narrow", sans-serif;
+  --body: "Source Sans 3", "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 48px;
+  min-height: 100%;
+}
+header { border-bottom: 4px solid var(--red); padding-bottom: 12px; margin-bottom: 24px; }
+h1 {
+  font: 700 clamp(28px, 6vw, 40px)/1.05 var(--display);
+  text-transform: uppercase; letter-spacing: .02em; margin: 0; text-wrap: balance;
+}
+.sub { color: var(--muted); margin: 6px 0 0; }
+.who { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+.who label { color: var(--muted); font-size: 14px; }
+input[type=text], textarea {
+  background: var(--panel); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 4px;
+  padding: 10px 12px; font: inherit; min-width: 0; flex: 1 1 180px;
+}
+textarea { width: 100%; min-height: 72px; resize: vertical; flex: 1 1 100%; }
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--red); outline-offset: 1px; }
+h2 {
+  font: 500 24px/1.1 var(--display); text-transform: uppercase; letter-spacing: .04em;
+  margin: 0 0 10px; display: flex; align-items: center; gap: 10px;
+  min-width: 0; overflow-wrap: anywhere;
+}
+h2::before { content: ""; width: 10px; height: 24px; background: var(--red); flex: 0 0 auto; }
+h3 {
+  font: 500 16px/1.2 var(--display); text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); margin: 28px 0 6px;
+}
+ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+li.tarea {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px;
+  padding: 12px 2px; border-bottom: 1px solid var(--line); min-width: 0;
+}
+li.tarea > .fila { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
+li.tarea .text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+li.tarea.done .text { color: var(--muted); text-decoration: line-through; }
+.by { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.obs { width: 100%; padding-left: 34px; margin-top: 4px; }
+.obs p { margin: 4px 0; font-size: 15px; overflow-wrap: anywhere; }
+.obs .quien { color: var(--muted); font-size: 13px; }
+.bloque { width: 100%; padding-left: 34px; }
+.bloque form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+li.sector-row { cursor: pointer; padding: 12px 2px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: center; }
+li.sector-row:hover .text { color: var(--red); }
+li.sector-row .text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+li.sector-row .count { color: var(--muted); font-size: 14px; white-space: nowrap; }
+input[type=checkbox] {
+  appearance: none; -webkit-appearance: none;
+  width: 22px; height: 22px; flex: 0 0 auto;
+  border: 2px solid var(--red); border-radius: 3px;
+  background: transparent; cursor: pointer; margin: 0;
+}
+input[type=checkbox]:checked { background: var(--red); }
+input[type=checkbox]:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+button {
+  font: 600 14px var(--body); color: var(--fg); background: transparent;
+  border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px;
+  cursor: pointer; flex: 0 0 auto;
+}
+button:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+button.primary { background: var(--red); border-color: var(--red); }
+button:disabled { opacity: .5; cursor: default; }
+button.back { margin-bottom: 14px; }
+.add { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.empty { color: var(--muted); padding: 12px 2px; margin: 0; border-bottom: 1px solid var(--line); }
+.status { color: var(--muted); font-size: 14px; margin-top: 16px; min-height: 1em; }
+@media (max-width: 420px) {
+  .obs, .bloque { padding-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Pendientes del Encuentro</h1>
+  <p class="sub">XXI Encuentro Nacional de Mini Básquet · Club Independiente de Tandil</p>
+  <div class="who">
+    <label for="name">Tu nombre</label>
+    <input type="text" id="name" maxlength="40" placeholder="Para saber quién agrega, tacha u observa">
+  </div>
+</header>
+
+<main id="app"></main>
+<p class="status" id="status" role="status"></p>
+
+<script>
+// PEGAR AQUÍ la URL de la aplicación web de Apps Script (la que termina en /exec)
+const API = "https://script.google.com/macros/s/AKfycbwy4ix1HYZ_UFge9YD-_E17cgO9Q5VYjhgRlyjojEWUxY02mvt-xhKKnOQAX1aPynRZaQ/exec";
+const REFRESCO_MS = 5000;
+const NAME_KEY = "encuentro-nombre";
+
+let sectores = [];   // {id, nombre, creado}
+let tareas = [];     // {id, sectorId, texto, hecha, agregadaPor, creado, tachadaPor, tachadaEn, observaciones}
+let openId = null;
+let tachandoId = null;   // tarea a la que se le está escribiendo la observación para tachar
+let observandoId = null; // tarea a la que se le está agregando una observación
+let ocupado = false;
+let cargado = false;
+
+const $app = document.getElementById("app");
+const $status = document.getElementById("status");
+const $name = document.getElementById("name");
+
+try { $name.value = localStorage.getItem(NAME_KEY) || ""; } catch (e) {}
+$name.addEventListener("change", () => {
+  try { localStorage.setItem(NAME_KEY, $name.value.trim()); } catch (e) {}
+});
+
+function setStatus(msg) { $status.textContent = msg || ""; }
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function estaHecha(t) { return t.hecha === true || t.hecha === "TRUE"; }
+function observaciones(t) {
+  if (Array.isArray(t.observaciones)) return t.observaciones;
+  try { const a = JSON.parse(t.observaciones || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function fechaCorta(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  return d.toLocaleString("es-AR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+async function leer() {
+  const r = await fetch(API, { cache: "no-store" });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const data = await r.json();
+  sectores = data.sectores || [];
+  tareas = data.tareas || [];
+  cargado = true;
+  render();
+}
+
+async function escribir(obj) {
+  // text/plain evita el preflight de CORS que Apps Script no admite
+  const r = await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(obj)
+  });
+  const data = await r.json();
+  if (!data.ok) throw new Error(data.error || "error");
+  await leer();
+}
+
+async function accion(fn) {
+  if (ocupado) return false;
+  ocupado = true;
+  try {
+    setStatus("Guardando…");
+    await fn();
+    setStatus("");
+    return true;
+  } catch (err) {
+    setStatus("No se pudo guardar. Probá de nuevo.");
+    console.error(err);
+    return false;
+  } finally {
+    ocupado = false;
+  }
+}
+
+function render() {
+  if (!cargado) { $app.innerHTML = `<p class="empty">Cargando…</p>`; return; }
+  if (openId && sectores.some(s => s.id === openId)) renderSector();
+  else { openId = null; renderList(); }
+}
+
+function renderList() {
+  const rows = [...sectores].sort((a, b) => String(a.creado).localeCompare(String(b.creado))).map(s => {
+    const pend = tareas.filter(t => t.sectorId === s.id && !estaHecha(t)).length;
+    const total = tareas.filter(t => t.sectorId === s.id).length;
+    const txt = pend ? pend + " pendiente" + (pend === 1 ? "" : "s") : (total ? "todo listo" : "sin tareas");
+    return `
+      <li class="sector-row" data-open="${esc(s.id)}" tabindex="0" role="button">
+        <span class="text">${esc(s.nombre)}</span>
+        <span class="count">${txt}</span>
+      </li>`;
+  }).join("");
+  $app.innerHTML = `
+    <h3>Sectores</h3>
+    ${rows ? `<ul>${rows}</ul>` : `<p class="empty">Todavía no hay sectores. Agregá el primero abajo.</p>`}
+    <form class="add" id="add-sector">
+      <input type="text" name="nombre" maxlength="80" placeholder="Nombre del sector, ej. Parrilla" aria-label="Nombre del sector">
+      <button class="primary" type="submit">Crear sector</button>
+    </form>`;
+}
+
+function renderObservaciones(t) {
+  const obs = observaciones(t);
+  if (!obs.length) return "";
+  return `<div class="obs">${obs.map(o => `
+    <p>${esc(o.texto)}</p>
+    <div class="quien">${esc(o.por)}${o.cuando ? " · " + esc(fechaCorta(o.cuando)) : ""}</div>`).join("")}</div>`;
+}
+
+function renderTarea(t) {
+  const hecha = estaHecha(t);
+  const meta = hecha
+    ? (t.tachadaPor ? `<span class="by">Tachada por ${esc(t.tachadaPor)}</span>` : "")
+    : (t.agregadaPor ? `<span class="by">Agregada por ${esc(t.agregadaPor)}</span>` : "");
+
+  let bloque = "";
+  if (tachandoId === t.id) {
+    bloque = `
+      <div class="bloque">
+        <form data-form="tachar" data-id="${esc(t.id)}">
+          <textarea name="obs" maxlength="1000" required placeholder="¿Cómo se solucionó la tarea?" aria-label="Cómo se solucionó"></textarea>
+          <button class="primary" type="submit">Tachar</button>
+          <button type="button" data-act="cancelar">Cancelar</button>
+        </form>
+      </div>`;
+  } else if (observandoId === t.id) {
+    bloque = `
+      <div class="bloque">
+        <form data-form="observar" data-id="${esc(t.id)}">
+          <textarea name="texto" maxlength="1000" required placeholder="Agregar observación" aria-label="Nueva observación"></textarea>
+          <button class="primary" type="submit">Guardar observación</button>
+          <button type="button" data-act="cancelar">Cancelar</button>
+        </form>
+      </div>`;
+  }
+
+  return `
+    <li class="tarea ${hecha ? "done" : ""}">
+      <div class="fila">
+        <input type="checkbox" ${hecha ? "checked" : ""} aria-label="Marcar: ${esc(t.texto)}" data-act="toggle" data-id="${esc(t.id)}">
+        <span class="text">${esc(t.texto)}</span>
+        ${meta}
+      </div>
+      ${renderObservaciones(t)}
+      ${bloque}
+      ${tachandoId === t.id || observandoId === t.id ? "" :
+        `<div class="bloque"><button type="button" data-act="observar" data-id="${esc(t.id)}">Agregar observación</button></div>`}
+    </li>`;
+}
+
+function renderSector() {
+  const s = sectores.find(x => x.id === openId);
+  const list = tareas
+    .filter(t => t.sectorId === s.id)
+    .sort((a, b) => (Number(estaHecha(a)) - Number(estaHecha(b))) || String(a.creado).localeCompare(String(b.creado)));
+  const rows = list.map(renderTarea).join("");
+  $app.innerHTML = `
+    <button class="back" data-act="back">← Volver a sectores</button>
+    <h2>${esc(s.nombre)}</h2>
+    ${rows ? `<ul>${rows}</ul>` : `<p class="empty">Este sector no tiene tareas todavía.</p>`}
+    <form class="add" id="add-task">
+      <input type="text" name="texto" maxlength="200" placeholder="Agregar tarea a ${esc(s.nombre)}" aria-label="Nueva tarea en ${esc(s.nombre)}">
+      <button class="primary" type="submit">Agregar tarea</button>
+    </form>`;
+}
+
+function exigirNombre() {
+  const por = $name.value.trim();
+  if (!por) { setStatus("Escribí tu nombre arriba primero."); $name.focus(); return null; }
+  return por;
+}
+
+$app.addEventListener("submit", e => {
+  e.preventDefault();
+  const form = e.target;
+
+  if (form.id === "add-sector") {
+    const input = form.elements.nombre;
+    const nombre = input.value.trim();
+    if (!nombre) return;
+    accion(async () => {
+      await escribir({ action: "addSector", nombre });
+      input.value = "";
+    });
+    return;
+  }
+
+  if (form.id === "add-task" && openId) {
+    const input = form.elements.texto;
+    const texto = input.value.trim();
+    if (!texto) return;
+    const agregadaPor = exigirNombre();
+    if (!agregadaPor) return;
+    accion(async () => {
+      await escribir({ action: "addTask", sectorId: openId, texto, agregadaPor });
+      input.value = "";
+    });
+    return;
+  }
+
+  if (form.dataset.form === "tachar") {
+    const obs = form.elements.obs.value.trim();
+    const por = exigirNombre();
+    if (!por || !obs) return;
+    accion(async () => {
+      await escribir({ action: "toggle", id: form.dataset.id, por, observacion: obs });
+      tachandoId = null;
+      render();
+    });
+    return;
+  }
+
+  if (form.dataset.form === "observar") {
+    const texto = form.elements.texto.value.trim();
+    const por = exigirNombre();
+    if (!por || !texto) return;
+    accion(async () => {
+      await escribir({ action: "observar", id: form.dataset.id, por, texto });
+      observandoId = null;
+      render();
+    });
+  }
+});
+
+$app.addEventListener("click", e => {
+  const row = e.target.closest("li.sector-row");
+  const back = e.target.closest("button[data-act='back']");
+  const cancelar = e.target.closest("button[data-act='cancelar']");
+  const observar = e.target.closest("button[data-act='observar']");
+  const box = e.target.closest("input[data-act='toggle']");
+
+  if (back) { openId = null; tachandoId = null; observandoId = null; setStatus(""); render(); return; }
+  if (cancelar) { tachandoId = null; observandoId = null; setStatus(""); render(); return; }
+  if (observar) { observandoId = observar.dataset.id; tachandoId = null; setStatus(""); render(); return; }
+  if (row) { openId = row.dataset.open; tachandoId = null; observandoId = null; setStatus(""); render(); return; }
+  if (!box) return;
+
+  const t = tareas.find(x => x.id === box.dataset.id);
+  if (!t) return;
+
+  // Destachar: no pide observación
+  if (estaHecha(t)) {
+    if (!exigirNombre()) { e.preventDefault(); return; }
+    accion(() => escribir({ action: "toggle", id: t.id, por: $name.value.trim() }));
+    return;
+  }
+
+  // Tachar: primero se pide cómo se solucionó
+  e.preventDefault(); // no marcar hasta tener la observación
+  if (!exigirNombre()) return;
+  tachandoId = t.id;
+  observandoId = null;
+  render();
+  const ta = $app.querySelector(`form[data-form="tachar"][data-id="${CSS.escape(t.id)}"] textarea`);
+  if (ta) ta.focus();
+});
+
+// Refresco periódico para ver lo que cargan los demás (sin pisar lo que se está escribiendo)
+setInterval(() => {
+  if (!ocupado && !tachandoId && !observandoId) leer().catch(() => {});
+}, REFRESCO_MS);
+
+if (API.startsWith("PEGAR")) {
+  $app.innerHTML = `<p class="empty">Falta configurar la URL de Apps Script en index.html.</p>`;
+} else {
+  leer().catch(() => setStatus("No se pudo cargar la lista. Revisá la conexión."));
+}
+</script>
+</body>
+</html>
